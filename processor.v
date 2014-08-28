@@ -18,7 +18,7 @@ module processor
      output [4:0] target
     );
 
-    reg [31:0] bank [0:31];
+    reg signed [31:0] bank [0:31];
     reg eq_r, lt_r;
     reg [4:0] d_r;
     wire st = (eq_r == eq_in) & (lt_r == lt_in);
@@ -26,12 +26,12 @@ module processor
     assign eq = eq_r == eq_in;
     assign lt = lt_r == lt_in;
 
-    reg st_wb, wb_r, memw_r;
+    reg st_wb, memw_r;
     assign target = alu_out;
 
     wire [31:0] mem_out;
     reg [31:0] mem_in, alu_out;
-    reg [15:0] imm_r;
+    reg signed [15:0] imm_r;
 
     memory m1 (memw_r, alu_out, mem_in, alu_out, mem_out); 
 
@@ -40,18 +40,20 @@ module processor
         imm_r = 0;
     end
     
-    always @(posedge clk) begin
+    always @(negedge clk) begin
         if (alu_sum)
             alu_out = bank[source1] + bank[source2] + imm_r;
         else 
             alu_out = bank[source1] - bank[source2] + imm_r;
         
-        if (wb_r)
+        if (wb)
             bank[dest] = alu_out;
 
         if (imm_wb)
             imm_r = { source1, source2, dest };
-        wb_r = wb;
+        else
+            imm_r = imm_r;
+
         if (mem_wb)
             mem_in = bank[dest] + imm_r;
 

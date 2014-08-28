@@ -4,17 +4,17 @@ module mem_processor
 
     /* Make a reset that pulses once. */
 
-    reg [31:0] pc;
+    reg signed [31:0] pc;
     reg wb, alu_sum, mem_wb, eq_in, lt_in, reset_st, set_st, imm_wb;
     reg [4:0] dest, source1, source2;
-    wire [4:0] target;
+    wire signed [4:0] target;
 
     processor p1 (clk, alu_sum, wb, mem_wb, imm_wb, eq_in, lt_in, reset_st, set_st, dest, source1, source2, target);
 
     wire [31:0] instruction;
     memory m1 (0, 0, 0, pc, instruction); 
 
-    always @ (clk) begin
+    always @ (posedge clk) begin
         alu_sum = instruction[0];
         wb = instruction[1];
         mem_wb = instruction[2];
@@ -24,10 +24,10 @@ module mem_processor
         reset_st = instruction[6];
         set_st = instruction[7];
         dest = instruction[12:8];
-        source1 = instruction[12:8];
-        source2 = instruction[17:13];
+        source1 = instruction[17:13];
+        source2 = instruction[22:18];
 
-        if (instruction[31])
+        if (instruction[23])
             pc = pc + target;
         else
             pc = pc + 1;
